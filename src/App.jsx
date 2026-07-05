@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 
 // Shared pages
 import Landing from './pages/Landing';
@@ -42,217 +43,220 @@ import './App.css';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Entry routes */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Entry routes */}
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
 
-        {/* DHO routes */}
-        <Route
-          path="/dho/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['DHO']}>
-              <DhoCommandCenter />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dho/ai-priorities"
-          element={
-            <ProtectedRoute allowedRoles={['DHO']}>
-              <DhoAIPriorities />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dho/phc-details"
-          element={
-            <ProtectedRoute allowedRoles={['DHO']}>
-              <DhoPHCDetails />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dho/resource-allocation"
-          element={
-            <ProtectedRoute allowedRoles={['DHO']}>
-              <DhoResourceAllocation />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dho/disease-monitoring"
-          element={
-            <ProtectedRoute allowedRoles={['DHO']}>
-              <DhoDiseaseMonitoring />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dho/notifications"
-          element={
-            <ProtectedRoute allowedRoles={['DHO']}>
-              <DhoNotifications />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dho/analytics"
-          element={
-            <ProtectedRoute allowedRoles={['DHO']}>
-              <DhoAnalytics />
-            </ProtectedRoute>
-          }
-        />
+          {/* DHO routes */}
+          <Route
+            path="/dho/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['dho']}>
+                <DhoCommandCenter />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dho/ai-priorities"
+            element={
+              <ProtectedRoute allowedRoles={['dho']}>
+                <DhoAIPriorities />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dho/phc-details"
+            element={
+              <ProtectedRoute allowedRoles={['dho']}>
+                <DhoPHCDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dho/resource-allocation"
+            element={
+              <ProtectedRoute allowedRoles={['dho']}>
+                <DhoResourceAllocation />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dho/disease-monitoring"
+            element={
+              <ProtectedRoute allowedRoles={['dho']}>
+                <DhoDiseaseMonitoring />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dho/notifications"
+            element={
+              <ProtectedRoute allowedRoles={['dho']}>
+                <DhoNotifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dho/analytics"
+            element={
+              <ProtectedRoute allowedRoles={['dho']}>
+                <DhoAnalytics />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Medical Officer routes */}
-        <Route
-          path="/mo/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['MO']}>
-              <MoDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/mo/daily-update"
-          element={
-            <ProtectedRoute allowedRoles={['MO']}>
-              <MoDailyUpdate />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/mo/staff"
-          element={
-            <ProtectedRoute allowedRoles={['MO']}>
-              <MoStaffAttendance />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/mo/beds"
-          element={
-            <ProtectedRoute allowedRoles={['MO']}>
-              <MoBedAvailability />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/mo/tests"
-          element={
-            <ProtectedRoute allowedRoles={['MO']}>
-              <MoTestAvailability />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/mo/requests"
-          element={
-            <ProtectedRoute allowedRoles={['MO']}>
-              <MoRequestsIssues />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/mo/notifications"
-          element={
-            <ProtectedRoute allowedRoles={['MO']}>
-              <MoNotifications />
-            </ProtectedRoute>
-          }
-        />
+          {/* Medical Officer routes */}
+          <Route
+            path="/medical-officer/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['medical_officer']}>
+                <MoDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/medical-officer/daily-update"
+            element={
+              <ProtectedRoute allowedRoles={['medical_officer']}>
+                <MoDailyUpdate />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/medical-officer/staff"
+            element={
+              <ProtectedRoute allowedRoles={['medical_officer']}>
+                <MoStaffAttendance />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/medical-officer/beds"
+            element={
+              <ProtectedRoute allowedRoles={['medical_officer']}>
+                <MoBedAvailability />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/medical-officer/tests"
+            element={
+              <ProtectedRoute allowedRoles={['medical_officer']}>
+                <MoTestAvailability />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/medical-officer/requests"
+            element={
+              <ProtectedRoute allowedRoles={['medical_officer']}>
+                <MoRequestsIssues />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/medical-officer/notifications"
+            element={
+              <ProtectedRoute allowedRoles={['medical_officer']}>
+                <MoNotifications />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Pharmacist routes */}
-        <Route
-          path="/pharmacist/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['Pharmacist']}>
-              <PharmacistInventoryDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/pharmacist/inventory"
-          element={
-            <ProtectedRoute allowedRoles={['Pharmacist']}>
-              <PharmacistMedicineInventory />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/pharmacist/stock-update"
-          element={
-            <ProtectedRoute allowedRoles={['Pharmacist']}>
-              <PharmacistStockUpdate />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/pharmacist/transfers"
-          element={
-            <ProtectedRoute allowedRoles={['Pharmacist']}>
-              <PharmacistTransferOrders />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/pharmacist/transactions"
-          element={
-            <ProtectedRoute allowedRoles={['Pharmacist']}>
-              <PharmacistTransactionHistory />
-            </ProtectedRoute>
-          }
-        />
+          {/* Pharmacist routes */}
+          <Route
+            path="/pharmacist/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['pharmacist']}>
+                <PharmacistInventoryDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pharmacist/inventory"
+            element={
+              <ProtectedRoute allowedRoles={['pharmacist']}>
+                <PharmacistMedicineInventory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pharmacist/stock-update"
+            element={
+              <ProtectedRoute allowedRoles={['pharmacist']}>
+                <PharmacistStockUpdate />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pharmacist/transfers"
+            element={
+              <ProtectedRoute allowedRoles={['pharmacist']}>
+                <PharmacistTransferOrders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pharmacist/transactions"
+            element={
+              <ProtectedRoute allowedRoles={['pharmacist']}>
+                <PharmacistTransactionHistory />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* MP routes */}
-        <Route
-          path="/mp/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['MP']}>
-              <MpDistrictOverview />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/mp/analytics"
-          element={
-            <ProtectedRoute allowedRoles={['MP']}>
-              <MpConstituencyAnalytics />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/mp/heatmap"
-          element={
-            <ProtectedRoute allowedRoles={['MP']}>
-              <MpDiseaseHeatmap />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/mp/utilization"
-          element={
-            <ProtectedRoute allowedRoles={['MP']}>
-              <MpResourceUtilization />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/mp/reports"
-          element={
-            <ProtectedRoute allowedRoles={['MP']}>
-              <MpPerformanceReports />
-            </ProtectedRoute>
-          }
-        />
+          {/* MP routes */}
+          <Route
+            path="/mp/overview"
+            element={
+              <ProtectedRoute allowedRoles={['mp']}>
+                <MpDistrictOverview />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mp/analytics"
+            element={
+              <ProtectedRoute allowedRoles={['mp']}>
+                <MpConstituencyAnalytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mp/heatmap"
+            element={
+              <ProtectedRoute allowedRoles={['mp']}>
+                <MpDiseaseHeatmap />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mp/utilization"
+            element={
+              <ProtectedRoute allowedRoles={['mp']}>
+                <MpResourceUtilization />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mp/reports"
+            element={
+              <ProtectedRoute allowedRoles={['mp']}>
+                <MpPerformanceReports />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Catch-all redirect */}
-        <Route path="*" element={<Landing />} />
-      </Routes>
-    </Router>
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Landing />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
 export default App;
+
