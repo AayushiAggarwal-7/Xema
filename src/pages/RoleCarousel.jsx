@@ -178,10 +178,10 @@ export default function RoleCarousel({ onReturnHome }) {
     }
     function goNext() { step(1); }
     function goBack() { step(-1); }
-    function handleLogin(role) { navigate("/login", { state: { email: role.demoEmail } }); }
-
+    function handleLogin(role) {
+  navigate("/login", { state: { email: role.demoEmail, color: role.color, label: role.label } });
     React.useEffect(() => () => clearTimers(), []);
-
+    }
     return (
         <div style={styles.page}>
             <style>{interactionCSS}</style>
