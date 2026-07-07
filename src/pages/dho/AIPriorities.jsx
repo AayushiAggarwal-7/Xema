@@ -22,15 +22,19 @@ export default function AIPriorities() {
   const [handledIds, setHandledIds] = useState([]);
   const [actioning, setActioning] = useState(null);
 
-  async function handleAction(alert) {
-    setActioning(alert.phcId);
+  // Renamed the parameter from `alert` to `phcAlert` — the original name
+  // shadowed window.alert(), so the error-path alert(...) call below would
+  // have crashed with "alert is not a function" the first time a Firestore
+  // write actually failed.
+  async function handleAction(phcAlert) {
+    setActioning(phcAlert.phcId);
     try {
       const actionDoc = {
-        phc_id: alert.phcId,
-        phc_name: alert.phcName,
-        action_type: alert.actionType,
-        description: alert.actionLabel,
-        reason: alert.reason,
+        phc_id: phcAlert.phcId,
+        phc_name: phcAlert.phcName,
+        action_type: phcAlert.actionType,
+        description: phcAlert.actionLabel,
+        reason: phcAlert.reason,
         status: 'approved',
         approved_by: user?.uid || 'dho',
         created_at: new Date().toISOString(),
@@ -41,10 +45,10 @@ export default function AIPriorities() {
 
       // Stock-type approvals also create the actual pending Transfer,
       // so the Pharmacist sees it as a real "Confirm Transfer" next.
-      if (alert.actionType === 'stock' && alert.worstMed) {
+      if (phcAlert.actionType === 'stock' && phcAlert.worstMed) {
         await setDoc(doc(collection(db, 'Transfers')), {
-          medicine_id: alert.worstMed.name,
-          to_phc_id: alert.phcId,
+          medicine_id: phcAlert.worstMed.name,
+          to_phc_id: phcAlert.phcId,
           status: 'pending',
           quantity: null, // Pharmacist confirms exact quantity on dispatch
           requested_by: 'dho_approval',
@@ -54,15 +58,15 @@ export default function AIPriorities() {
         });
       }
 
-      setHandledIds((prev) => [...prev, alert.phcId]);
+      setHandledIds((prev) => [...prev, phcAlert.phcId]);
     } catch (err) {
       console.error('Failed to record action:', err);
-      alert('Something went wrong recording this action — check the console.');
+      window.alert('Something went wrong recording this action — check the console.');
     } finally {
       setActioning(null);
     }
   }
-  <div style={styles.alertTopRow} onClick={() => navigate(`/dho/report/${alert.phcId}`)} role="button"></div>
+
   const visibleAlerts = alerts.filter((a) => !handledIds.includes(a.phcId));
   const timeAgoText = generatedAt
     ? `Generated ${Math.max(0, Math.round((Date.now() - generatedAt.getTime()) / 60000))} min ago`
@@ -108,14 +112,23 @@ export default function AIPriorities() {
               key={alert.phcId}
               style={{ ...styles.alertCard, borderColor: tierStyle.border, boxShadow: `0 0 30px ${tierStyle.glow}` }}
             >
-              <div style={styles.alertTopRow}>
+              {/* onClick now actually attached to the rendered card's top row,
+                  instead of sitting on an orphaned, never-rendered element. */}
+              <div
+                style={{ ...styles.alertTopRow, cursor: 'pointer' }}
+                onClick={() => navigate(`/dho/report/${alert.phcId}`)}
+                role="button"
+              >
                 <h3 style={styles.alertTitle}>{alert.phcName}</h3>
                 <span style={{ ...styles.tierBadge, backgroundColor: tierStyle.badgeBg }}>{alert.tier}</span>
               </div>
               <p style={styles.alertReason}>{alert.reason}</p>
               <button
                 style={styles.actionBtn}
-                onClick={() => handleAction(alert)}
+                onClick={(e) => {
+                  e.stopPropagation(); // don't also trigger the card's navigate
+                  handleAction(alert);
+                }}
                 disabled={actioning === alert.phcId}
               >
                 {actioning === alert.phcId ? 'Recording…' : alert.actionLabel}

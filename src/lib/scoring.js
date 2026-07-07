@@ -67,9 +67,9 @@ export async function computeDistrictScores() {
             where("phc_id", "==", phcId),
             orderBy("date", "asc")
         );
-        const diseaseSnap = await getDocs(diseaseQ);
+        const DiseaseCases = await getDocs(diseaseQ);
         const byDisease = {};
-        diseaseSnap.forEach((d) => {
+        DiseaseCases.forEach((d) => {
             const row = d.data();
             if (!byDisease[row.disease_name]) byDisease[row.disease_name] = [];
             byDisease[row.disease_name].push(row);

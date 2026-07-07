@@ -15,16 +15,8 @@ import DhoResourceAllocation from './pages/dho/ResourceAllocation';
 import DhoDiseaseMonitoring from './pages/dho/DiseaseMonitoring';
 import DhoNotifications from './pages/dho/Notifications';
 import DhoAnalytics from './pages/dho/Analytics';
-import DhoReportDetail from './pages/dho/ReportDetail';
-// ...
-<Route
-  path="/dho/report/:phcId"
-  element={
-    <ProtectedRoute allowedRoles={['dho']}>
-      <DhoReportDetail />
-    </ProtectedRoute>
-  }
-/>
+// FIX 1: Changed double dots (../) to a single dot (./) to match project paths
+import DhoReportdetail from './pages/dho/Reportdetail';
 // MO pages
 import MoDashboard from './pages/mo/Dashboard';
 import MoDailyUpdate from './pages/mo/DailyUpdate';
@@ -47,7 +39,6 @@ import MpConstituencyAnalytics from './pages/mp/ConstituencyAnalytics';
 import MpDiseaseHeatmap from './pages/mp/DiseaseHeatmap';
 import MpResourceUtilization from './pages/mp/ResourceUtilization';
 import MpPerformanceReports from './pages/mp/PerformanceReports';
-
 import './App.css';
 
 function App() {
@@ -65,14 +56,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['dho']}>
                 <DhoCommandCenter />
+              </ProtectedRoute>}
+          />
+          <Route
+            path="/dho/report/:phcId"
+            element={
+              <ProtectedRoute allowedRoles={['dho']}>
+                <DhoReportdetail />
               </ProtectedRoute>
             }
           />
+          {/* Update this route to use DhoReportdetail instead of the missing PHCReportDetail */}
           <Route
-            path="/dho/ai-priorities"
+            path="/dho/phc/:phcId"
             element={
               <ProtectedRoute allowedRoles={['dho']}>
-                <DhoAIPriorities />
+                <DhoReportdetail />
               </ProtectedRoute>
             }
           />
@@ -116,7 +115,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/dho/ai-priorities"
+            element={
+              <ProtectedRoute allowedRoles={['dho']}>
+                <DhoAIPriorities />
+              </ProtectedRoute>
+            }
+          />
           {/* Medical Officer routes */}
           <Route
             path="/medical-officer/dashboard"
@@ -268,4 +274,3 @@ function App() {
 }
 
 export default App;
-

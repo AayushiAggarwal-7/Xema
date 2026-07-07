@@ -243,7 +243,7 @@ export default function CommandCenter() {
                     key={phc.phcId}
                     className="phc-card"
                     style={{ background: colors.bg, borderColor: colors.border }}
-                    onClick={() => navigate(`/dho/report-detail/${phc.phcId}`)}
+                    onClick={() => navigate(`/dho/phc/${phc.phcId}`)}
                   >
                     <div className="phc-card-top">
                       <span className="phc-name">{phc.phcName}</span>
