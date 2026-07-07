@@ -15,7 +15,16 @@ import DhoResourceAllocation from './pages/dho/ResourceAllocation';
 import DhoDiseaseMonitoring from './pages/dho/DiseaseMonitoring';
 import DhoNotifications from './pages/dho/Notifications';
 import DhoAnalytics from './pages/dho/Analytics';
-
+import DhoReportDetail from './pages/dho/ReportDetail';
+// ...
+<Route
+  path="/dho/report/:phcId"
+  element={
+    <ProtectedRoute allowedRoles={['dho']}>
+      <DhoReportDetail />
+    </ProtectedRoute>
+  }
+/>
 // MO pages
 import MoDashboard from './pages/mo/Dashboard';
 import MoDailyUpdate from './pages/mo/DailyUpdate';
