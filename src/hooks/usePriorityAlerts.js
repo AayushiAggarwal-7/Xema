@@ -1,7 +1,27 @@
 import { useEffect, useState, useCallback } from "react";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "../lib/firebase.js";
-
+import { useEffect, useState, useCallback } from "react";
+import { computeDistrictScores } from "../lib/scoring.js";
+ 
+export function usePriorityAlerts() {
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [generatedAt, setGeneratedAt] = useState(null);
+ 
+  const compute = useCallback(async () => {
+    setLoading(true);
+    const all = await computeDistrictScores();
+    setAlerts(all.filter((a) => a.tier !== "Healthy"));
+    setGeneratedAt(new Date());
+    setLoading(false);
+  }, []);
+ 
+  useEffect(() => { compute(); }, [compute]);
+ 
+  return { alerts, loading, generatedAt, refresh: compute };
+}
+ 
 const WEIGHTS = { stock: 0.4, disease: 0.35, staffing: 0.25 };
 const HIGH_THRESHOLD = 0.6;
 const MEDIUM_THRESHOLD = 0.3;
