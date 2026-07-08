@@ -55,7 +55,7 @@ export async function computeDistrictScores() {
             const ratio = item.quantity / threshold;
             if (ratio < worstRatio) {
                 worstRatio = ratio;
-                worstMed = { name: meds[item.medicine_id]?.name, quantity: item.quantity, threshold };
+                worstMed = { name: meds[item.medicine_id]?.name, medicineId: item.medicine_id, quantity: item.quantity, threshold };
             }
         });
         const stockScore = clamp(1 - worstRatio, 0, 1);
@@ -146,6 +146,7 @@ export async function computeDistrictScores() {
             if (dominant === "stock" && worstMed) {
                 reason = `${worstMed.name} at ${worstMed.quantity} of ${worstMed.threshold} strips, below threshold.`;
                 let bestSource = null;
+                let bestSourceId = null;
                 let bestQty = -1;
                 Object.entries(inventoryByPhc).forEach(([otherPhcId, items]) => {
                     if (otherPhcId === phcId) return;
@@ -153,9 +154,11 @@ export async function computeDistrictScores() {
                     if (match && match.quantity > bestQty) {
                         bestQty = match.quantity;
                         bestSource = phcs[otherPhcId]?.name;
+                        bestSourceId = otherPhcId;
                     }
                 });
                 actionLabel = bestSource ? `Approve transfer from ${bestSource}` : "Review stock transfer options";
+                worstMed.bestSourceId = bestSourceId;
             } else if (dominant === "disease" && (outbreakInfo || diseaseInfo)) {
                 const info = outbreakInfo || diseaseInfo;
                 reason = `${info.name} cases rising to ${info.latest} per day over the last week.`;
@@ -175,6 +178,8 @@ export async function computeDistrictScores() {
             actionLabel,
             actionType: dominant,
             worstMed,
+            worstMedId: worstMed?.medicineId || null,
+            bestSourceId: worstMed?.bestSourceId || null,
         });
     }
 

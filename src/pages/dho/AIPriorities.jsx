@@ -47,7 +47,8 @@ export default function AIPriorities() {
       // so the Pharmacist sees it as a real "Confirm Transfer" next.
       if (phcAlert.actionType === 'stock' && phcAlert.worstMed) {
         await setDoc(doc(collection(db, 'Transfers')), {
-          medicine_id: phcAlert.worstMed.name,
+          medicine_id: phcAlert.worstMedId || phcAlert.worstMed.medicineId,
+          from_phc_id: phcAlert.bestSourceId || phcAlert.worstMed.bestSourceId || null,
           to_phc_id: phcAlert.phcId,
           status: 'pending',
           quantity: null, // Pharmacist confirms exact quantity on dispatch
