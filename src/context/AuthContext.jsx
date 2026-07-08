@@ -52,7 +52,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       await signOut(auth);
-      setUser(null);
+      navigate('/');
     } catch (error) {
       console.error('Error during sign out:', error);
     } finally {
