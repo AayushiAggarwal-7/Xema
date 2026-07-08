@@ -8,6 +8,20 @@ const MUSTARD = '#E0A72E';
 const NAVY = '#1B2A4A';
 const CREAM = '#FBF8F0';
 
+// Shared status -> pill styling/label, kept in sync with the DHO
+// TransferApprovals screen so a transfer looks the same everywhere.
+const statusColors = {
+  completed: { bg: '#EAFAF0', fg: '#1E8A4C' },
+  rejected: { bg: '#FDECEC', fg: '#C0392B' },
+  rejected_by_dho: { bg: '#FDECEC', fg: '#C0392B' },
+  pending: { bg: '#FBF0D6', fg: '#8A6D2E' },
+  pending_approval: { bg: '#EAF0FB', fg: '#2E5C8A' },
+};
+const statusLabels = {
+  rejected_by_dho: 'Rejected by DHO',
+  pending_approval: 'Awaiting DHO approval',
+};
+
 export default function TransferOrders() {
   const { user } = useAuth();
   const phcId = user?.phc_id;
@@ -71,7 +85,17 @@ export default function TransferOrders() {
         ...t,
         medicineName: medicinesById[t.medicine_id]?.name || t.medicine_id,
         unit: medicinesById[t.medicine_id]?.unit || '',
-        fromPhcName: phcsById[t.from_phc_id]?.name || t.from_phc_id || '—',
+        // FIX: fall back to the ORIGINAL requested quantity/from-PHC captured at
+        // creation time if the top-level field was never (re)written — this is
+        // what kept showing as "—" for rejected transfers, since reject never
+        // touched `quantity`/`from_phc_id` and some rows only had them under
+        // `requested_quantity` / `requested_from_phc_id` from the request step.
+        fromPhcName:
+          phcsById[t.from_phc_id]?.name ||
+          phcsById[t.requested_from_phc_id]?.name ||
+          t.from_phc_id ||
+          t.requested_from_phc_id ||
+          '—',
         toPhcName: phcsById[t.to_phc_id]?.name || t.to_phc_id || '—',
         direction: t.to_phc_id === phcId ? 'incoming' : 'outgoing',
       }))
@@ -79,7 +103,15 @@ export default function TransferOrders() {
   }, [transfers, medicinesById, phcsById, phcId]);
 
   const incomingPending = enriched.filter((t) => t.direction === 'incoming' && t.status === 'pending');
-  const history = enriched.filter((t) => t.status !== 'pending' || t.direction === 'outgoing');
+  // Outgoing transfers always show in History so the requesting PHC can
+  // track their own request end-to-end (including while it's still
+  // 'pending_approval' with the DHO). Incoming transfers only show once
+  // they're past the DHO-approval stage — a 'pending_approval' incoming
+  // transfer isn't something the receiving PHC can act on yet, so it
+  // shouldn't clutter History before the DHO has approved or rejected it.
+  const history = enriched.filter(
+    (t) => t.direction === 'outgoing' || (t.status !== 'pending' && t.status !== 'pending_approval')
+  );
 
   async function confirmTransfer(t) {
     setError('');
@@ -135,8 +167,14 @@ export default function TransferOrders() {
     setBusyId(t.id);
     setError('');
     try {
+      // FIX: preserve the from-PHC and originally-requested quantity on the
+      // document itself when rejecting, so History always has something to
+      // show instead of "—" / "From —". We keep the values already on `t`
+      // (falling back to the requested_* fields) rather than clearing them.
       await updateDoc(doc(db, 'Transfers', t.id), {
         status: 'rejected',
+        from_phc_id: t.from_phc_id ?? t.requested_from_phc_id ?? null,
+        quantity: t.quantity ?? t.requested_quantity ?? null,
         completed_at: serverTimestamp(),
         completed_by: user?.uid || 'pharmacist',
       });
@@ -218,10 +256,10 @@ export default function TransferOrders() {
               <div style={styles.cell}>
                 <span style={{
                   ...styles.statusPill,
-                  background: t.status === 'completed' ? '#EAFAF0' : t.status === 'rejected' ? '#FDECEC' : '#FBF0D6',
-                  color: t.status === 'completed' ? '#1E8A4C' : t.status === 'rejected' ? '#C0392B' : '#8A6D2E',
+                  background: statusColors[t.status]?.bg || '#FBF0D6',
+                  color: statusColors[t.status]?.fg || '#8A6D2E',
                 }}>
-                  {t.status}
+                  {statusLabels[t.status] || t.status}
                 </span>
               </div>
             </div>

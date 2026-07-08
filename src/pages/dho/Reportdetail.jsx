@@ -213,7 +213,7 @@ export default function DhoReportDetail() {
                 </div>
 
                 <div style={styles.greeting}>
-                    <div>🙂 Good Morning!!</div>
+                    <div>{getGreeting().emoji} {getGreeting().text}</div>
                     <strong>{new Date().toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</strong>
                 </div>
 
