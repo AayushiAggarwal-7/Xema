@@ -20,10 +20,10 @@ const styles = {
   cornerBlob: (top, left, right, bottom, size, color) => ({
     position: "absolute", top, left, right, bottom,
     width: size, height: size, borderRadius: "50%",
-    backgroundColor: color, filter: "blur(8px)", opacity: 0.85, zIndex: 0,
+    backgroundColor: color, opacity: 1, zIndex: 0,
   }),
   contentWrap: { position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "576px", gap: "32px" },
-  logo: { height: "36px" },
+  logo: { height: "90px", marginBottom: "-8px" },
   tagline: { fontSize: "36px", fontWeight: 900, letterSpacing: "-0.5px", color: NAVY, lineHeight: 1.25, margin: 0, textAlign: "center" },
   desc: { fontSize: "16px", color: "#6B6A63", lineHeight: 1.65, maxWidth: "420px", textAlign: "center", margin: 0 },
   ctaButton: {

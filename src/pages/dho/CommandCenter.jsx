@@ -180,7 +180,6 @@ export default function CommandCenter() {
       <header className="dashboard-header">
         <div className="header-logo-section">
           <img src="/logo.svg" className="header-logo" alt="Xema" />
-          <span className="header-logo-text">Xema</span>
         </div>
 
         <div className="user-profile-section">

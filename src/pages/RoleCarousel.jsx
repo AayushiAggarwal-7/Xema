@@ -1,4 +1,3 @@
-// src/pages/RoleCarousel.jsx
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,8 +9,9 @@ import {
 } from "lucide-react";
 
 const CREAM = "#FBF8F0";
+const PANEL = "#F1F0EA"; // light gray-ish right-half panel color
 const NAVY = "#1B2A4A";
-const STAGE = 560; // fixed square size shared by ring, icons, illustration, banner
+const STAGE = 420; // fixed square size shared by ring, icons, illustration, banner — shrunk to keep everything in one viewport
 
 const ROLES = [
     {
@@ -74,48 +74,61 @@ const interactionCSS = `
 `;
 
 const styles = {
-    page: { minHeight: "100vh", backgroundColor: CREAM, overflow: "hidden", display: "flex", flexDirection: "column", userSelect: "none" },
-    navBar: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 44px" },
-    navLogo: { height: "30px", cursor: "pointer" },
-    navTabs: { display: "flex", gap: "4px", backgroundColor: "#F3F1EA", borderRadius: "999px", padding: "4px", border: "1px solid #E5E1D6" },
-    navTabActive: { backgroundColor: "#EDE79A", borderRadius: "999px", padding: "7px 18px", fontSize: "12px", fontWeight: 700, color: NAVY, cursor: "pointer" },
-    navTabInactive: { padding: "7px 18px", fontSize: "12px", fontWeight: 600, color: "#8A897F" },
-    profileIcon: { width: "36px", height: "36px", borderRadius: "50%", backgroundColor: NAVY, display: "flex", alignItems: "center", justifyContent: "center" },
+    // Split background: cream on the left half, light gray panel on the right half,
+    // meeting at a hard edge down the center — this also removes the need to
+    // scroll, since everything below is sized to fit inside 100vh.
+    page: {
+        height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", userSelect: "none",
+        background: `linear-gradient(to right, ${CREAM} 50%, ${PANEL} 50%)`,
+    },
+    navBar: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 32px" },
+    navLogo: { height: "24px", cursor: "pointer" },
+    navTabs: {
+        display: "flex", gap: "4px", backgroundColor: "transparent", borderRadius: "999px",
+        padding: "3px", border: "1.5px solid #D9D6CC",
+    },
+    navTabActive: { backgroundColor: "#EDE79A", borderRadius: "999px", padding: "6px 16px", fontSize: "11.5px", fontWeight: 700, color: NAVY, cursor: "pointer" },
+    navTabInactive: { padding: "6px 16px", fontSize: "11.5px", fontWeight: 600, color: "#8A897F" },
+    // Plain silhouette icon, no filled circle background — matches target
+    profileIcon: { display: "flex", alignItems: "center", justifyContent: "center" },
 
-    mainRow: { flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", gap: "24px", padding: "0 64px", position: "relative" },
-    leftCol: { zIndex: 2, maxWidth: "480px" },
-    headlineLine: { fontSize: "40px", fontWeight: 800, lineHeight: 1.2, margin: 0, color: NAVY },
-    descText: { fontSize: "15px", color: "#5B5A52", marginTop: "22px", maxWidth: "420px", lineHeight: 1.65 },
-    buttonRow: { display: "flex", gap: "14px", marginTop: "30px" },
+    mainRow: { flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", gap: "16px", padding: "0 40px 0 22px", position: "relative", minHeight: 0 },
+    leftCol: { zIndex: 2, maxWidth: "440px" },
+    headlineLine: { fontSize: "36px", fontWeight: 800, lineHeight: 1.16, margin: 0, color: NAVY },
+    descText: { fontSize: "13.5px", color: "#5B5A52", marginTop: "12px", maxWidth: "400px", lineHeight: 1.55 },
+    buttonRow: { display: "flex", gap: "12px", marginTop: "18px" },
     loginBtn: (color, textColor) => ({
         backgroundColor: color, color: textColor, border: `2px solid ${NAVY}`, fontWeight: 700,
-        fontSize: "15px", padding: "12px 30px", borderRadius: "999px", cursor: "pointer",
+        fontSize: "13.5px", padding: "10px 26px", borderRadius: "999px", cursor: "pointer",
     }),
     nextBtn: (disabled) => ({
         backgroundColor: "#FBF3D9", color: NAVY, border: `2px solid ${NAVY}`, fontWeight: 700,
-        fontSize: "15px", padding: "12px 26px", borderRadius: "999px",
+        fontSize: "13.5px", padding: "10px 22px", borderRadius: "999px",
         cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.6 : 1,
         display: "flex", alignItems: "center", gap: "6px",
     }),
 
-    rightCol: { position: "relative", height: "560px", display: "flex", alignItems: "center", justifyContent: "center" },
+    rightCol: { position: "relative", height: `${STAGE}px`, display: "flex", alignItems: "center", justifyContent: "center" },
     stage: { position: "relative", width: `${STAGE}px`, height: `${STAGE}px`, flexShrink: 0 },
-    illustrationImg: { position: "absolute", left: "50%", top: "54%", transform: "translate(-50%, -50%)", zIndex: 3, maxHeight: "230px", maxWidth: "230px", objectFit: "contain" },
+    illustrationImg: { position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: 3, maxHeight: "280px", maxWidth: "280px", objectFit: "contain" },
+    // Underline-accent label instead of a solid filled block — sits just
+    // under the illustration with a tinted background and a bottom border.
     roleBanner: (color, textColor) => ({
-        position: "absolute", bottom: "18px", left: "50%", transform: "translateX(-50%)",
-        backgroundColor: color, color: textColor, fontWeight: 800, fontSize: "20px",
-        padding: "10px 28px", zIndex: 4, letterSpacing: "1px", opacity: 0.94, whiteSpace: "nowrap",
+        position: "absolute", bottom: "8%", left: "50%", transform: "translateX(-50%)",
+        backgroundColor: `${color}26`, color: textColor, fontWeight: 800, fontSize: "16px",
+        padding: "6px 20px", zIndex: 4, letterSpacing: "0.5px", whiteSpace: "nowrap",
+        borderBottom: `3px solid ${color}`,
     }),
     iconBubble: (top, left, color) => ({
         position: "absolute", top, left, transform: "translate(-50%, -50%)",
-        width: "46px", height: "46px", borderRadius: "50%",
+        width: "38px", height: "38px", borderRadius: "50%",
         backgroundColor: `${color}33`, border: `2px solid ${color}`, display: "flex",
         alignItems: "center", justifyContent: "center", zIndex: 5,
     }),
 
-    bottomNav: { display: "flex", justifyContent: "center", alignItems: "center", gap: "18px", padding: "26px 0" },
-    backBtn: { background: "none", border: "none", fontSize: "14px", color: "#6B6A63", cursor: "pointer" },
-    dot: (color) => ({ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: color }),
+    bottomNav: { display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", padding: "14px 0" },
+    backBtn: { background: "none", border: "none", fontSize: "13px", color: "#6B6A63", cursor: "pointer" },
+    dot: (color) => ({ width: "7px", height: "7px", borderRadius: "50%", backgroundColor: color }),
 };
 
 // Icon positions as {top%, left%} of the shared STAGE square —
@@ -129,7 +142,7 @@ const ICON_POSITIONS = [
 // a solid circle looks identical at every rotation angle, so spinning
 // it is invisible. The dashes make rotation visually obvious.
 function RingSVG({ color, spinning }) {
-    const r = 250;
+    const r = STAGE * 0.48;
     const cx = STAGE / 2;
     const cy = STAGE / 2;
     const circumference = 2 * Math.PI * r;
@@ -144,7 +157,7 @@ function RingSVG({ color, spinning }) {
                 cx={cx} cy={cy} r={r}
                 fill="none"
                 stroke={color}
-                strokeWidth={34}
+                strokeWidth={30}
                 strokeLinecap="round"
                 strokeDasharray={`${circumference * 0.62} ${circumference * 0.1}`}
                 transform={`rotate(-90 ${cx} ${cy})`}
@@ -193,7 +206,7 @@ export default function RoleCarousel({ onReturnHome }) {
                     <span className="xema-nav-clickable" style={styles.navTabActive} onClick={onReturnHome} title="Back to home">HOME</span>
                     <span style={styles.navTabInactive}>ABOUT</span>
                 </div>
-                <div style={styles.profileIcon}><User size={18} color={CREAM} /></div>
+                <div style={styles.profileIcon}><User size={20} color={NAVY} /></div>
             </div>
 
             <div style={styles.mainRow}>
@@ -221,7 +234,7 @@ export default function RoleCarousel({ onReturnHome }) {
                         <RingSVG color={active.color} spinning={isSpinning} />
                         {active.icons.map((Icon, i) => (
                             <div key={i} style={styles.iconBubble(ICON_POSITIONS[i].top, ICON_POSITIONS[i].left, active.color)}>
-                                <Icon size={20} color={active.color} />
+                                <Icon size={18} color={active.color} />
                             </div>
                         ))}
                         <img src={active.illustration} alt={active.label} style={styles.illustrationImg} />

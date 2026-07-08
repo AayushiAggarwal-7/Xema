@@ -1,17 +1,9 @@
-// scripts/seed-reports-data.cjs
-//
-// Seeds SubmittedReports and recommendations — the two collections
-// DhoReportDetail.jsx reads that likely don't exist yet, which is why
-// that page was stuck on an infinite loading spinner.
-//
-// Run with: node scripts/seed-reports-data.cjs
-// Requires scripts/serviceAccountKey.json (same as your other seed scripts).
-
-const admin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore, Timestamp } = require("firebase-admin/firestore");
 const serviceAccount = require("./serviceAccountKey.json");
 
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-const db = admin.firestore();
+const app = initializeApp({ credential: cert(serviceAccount) });
+const db = getFirestore(app);
 
 // --- Adjust these to match your actual PHCs collection doc IDs ---
 const RAMPUR_PHC_ID = "rampur";
@@ -28,7 +20,7 @@ async function seedSubmittedReports() {
         report_type: "stock_update",
         report_type_label: "Stock Update",
         submitted_by: "Pharmacist, Rampur",
-        timestamp: admin.firestore.Timestamp.fromDate(new Date("2026-07-06T09:15:00")),
+        timestamp: Timestamp.fromDate(new Date("2026-07-06T09:15:00")),
         timestamp_display: "2026-07-06, 09:15 AM",
         data: {
             "Medicine": "Amoxicillin 500mg",
@@ -47,7 +39,7 @@ async function seedSubmittedReports() {
         report_type: "daily_log",
         report_type_label: "Daily Patient & Disease Log",
         submitted_by: "Medical Officer, Sitapur",
-        timestamp: admin.firestore.Timestamp.fromDate(new Date("2026-07-06T18:30:00")),
+        timestamp: Timestamp.fromDate(new Date("2026-07-06T18:30:00")),
         timestamp_display: "2026-07-06, 06:30 PM",
         data: {
             "Total patients seen today": 34,
