@@ -226,12 +226,21 @@ export default function CommandCenter() {
 
             <div className="section-header">
               <span className="section-title">District PHC Overview</span>
-              <a
-                className="view-priorities-link"
-                onClick={() => navigate("/dho/ai-priorities")}
-              >
-                View AI Priorities →
-              </a>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <a
+                  className="view-priorities-link"
+                  onClick={() => navigate("/dho/ai-priorities")}
+                >
+                  View AI Priorities →
+                </a>
+                <a
+                  className="view-priorities-link"
+                  style={{ color: '#E0A72E' }}
+                  onClick={() => navigate("/dho/transfers")}
+                >
+                  Approve Transfers →
+                </a>
+              </div>
             </div>
 
             <div className="phc-grid">

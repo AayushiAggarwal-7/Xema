@@ -15,6 +15,7 @@ import DhoResourceAllocation from './pages/dho/ResourceAllocation';
 import DhoDiseaseMonitoring from './pages/dho/DiseaseMonitoring';
 import DhoNotifications from './pages/dho/Notifications';
 import DhoAnalytics from './pages/dho/Analytics';
+import DhoTransferApprovals from './pages/dho/TransferApprovals';
 // FIX 1: Changed double dots (../) to a single dot (./) to match project paths
 import DhoReportdetail from './pages/dho/Reportdetail';
 // MO pages
@@ -89,6 +90,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['dho']}>
                 <DhoResourceAllocation />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dho/transfers"
+            element={
+              <ProtectedRoute allowedRoles={['dho']}>
+                <DhoTransferApprovals />
               </ProtectedRoute>
             }
           />

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, ArrowRight, Bell } from 'lucide-react';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, addDoc, updateDoc, increment, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase.js';
 import { useAuth } from '../../context/AuthContext';
 import { usePriorityAlerts } from '../../hooks/usePriorityAlerts';
@@ -39,24 +39,68 @@ export default function AIPriorities() {
         approved_by: user?.uid || 'dho',
         created_at: new Date().toISOString(),
       };
-      // Every DHO approval gets logged as an auditable Action record —
-      // this is the "propose -> approve -> execute" pattern from the spec.
       await setDoc(doc(collection(db, 'Actions')), actionDoc);
 
-      // Stock-type approvals also create the actual pending Transfer,
-      // so the Pharmacist sees it as a real "Confirm Transfer" next.
       if (phcAlert.actionType === 'stock' && phcAlert.worstMed) {
-        await setDoc(doc(collection(db, 'Transfers')), {
-          medicine_id: phcAlert.worstMedId || phcAlert.worstMed.medicineId,
-          from_phc_id: phcAlert.bestSourceId || phcAlert.worstMed.bestSourceId || null,
-          to_phc_id: phcAlert.phcId,
-          status: 'pending',
-          quantity: null, // Pharmacist confirms exact quantity on dispatch
-          requested_by: 'dho_approval',
-          approved_by: user?.uid || 'dho',
-          requested_at: new Date().toISOString(),
-          approved_at: new Date().toISOString(),
-        });
+        const qty = 40; // Default transfer quantity
+        const medId = phcAlert.worstMedId || phcAlert.worstMed.medicineId;
+        const fromPhcId = phcAlert.bestSourceId || phcAlert.worstMed.bestSourceId || null;
+
+        if (fromPhcId && medId) {
+          // 1. Create a completed Transfer document
+          await addDoc(collection(db, 'Transfers'), {
+            medicine_id: medId,
+            from_phc_id: fromPhcId,
+            to_phc_id: phcAlert.phcId,
+            status: 'completed',
+            quantity: qty,
+            requested_by: 'dho_approval',
+            approved_by: user?.uid || 'dho',
+            requested_at: new Date().toISOString(),
+            approved_at: new Date().toISOString(),
+          });
+
+          // 2. Add stock to receiver's inventory
+          const rxQ = query(collection(db, 'Inventory'), where('phc_id', '==', phcAlert.phcId), where('medicine_id', '==', medId));
+          const rxSnap = await getDocs(rxQ);
+          if (!rxSnap.empty) {
+            await updateDoc(doc(db, 'Inventory', rxSnap.docs[0].id), { quantity: increment(qty) });
+          } else {
+            await addDoc(collection(db, 'Inventory'), {
+              phc_id: phcAlert.phcId,
+              medicine_id: medId,
+              quantity: qty,
+            });
+          }
+
+          // 3. Subtract stock from sender's inventory
+          const txQ = query(collection(db, 'Inventory'), where('phc_id', '==', fromPhcId), where('medicine_id', '==', medId));
+          const txSnap = await getDocs(txQ);
+          if (!txSnap.empty) {
+            await updateDoc(doc(db, 'Inventory', txSnap.docs[0].id), { quantity: increment(-qty) });
+          }
+
+          // 4. Log transactions for both sides
+          await addDoc(collection(db, 'Transactions'), {
+            phc_id: phcAlert.phcId,
+            medicine_id: medId,
+            type: 'receive',
+            quantity: qty,
+            note: `Received from ${fromPhcId} (AI Alert Approved)`,
+            performed_by: user?.uid || 'dho',
+            created_at: new Date().toISOString(),
+          });
+
+          await addDoc(collection(db, 'Transactions'), {
+            phc_id: fromPhcId,
+            medicine_id: medId,
+            type: 'dispense',
+            quantity: qty,
+            note: `Dispatched to ${phcAlert.phcId} (AI Alert Approved)`,
+            performed_by: user?.uid || 'dho',
+            created_at: new Date().toISOString(),
+          });
+        }
       }
 
       setHandledIds((prev) => [...prev, phcAlert.phcId]);

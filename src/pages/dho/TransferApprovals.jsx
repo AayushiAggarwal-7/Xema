@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { collection, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, serverTimestamp, increment, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
 import { db } from '../../lib/firebase.js';
 import DashboardHeader from '../../components/DashboardHeader';
@@ -86,12 +86,57 @@ export default function TransferApprovals() {
     async function approveTransfer(t) {
         setBusyId(t.id);
         setError('');
+        const qty = Number(t.quantity || t.requested_quantity || 40);
         try {
+            // 1. Add stock to receiver's inventory
+            const rxInvQ = query(collection(db, 'Inventory'), where('phc_id', '==', t.to_phc_id), where('medicine_id', '==', t.medicine_id));
+            const rxInvSnap = await getDocs(rxInvQ);
+            if (!rxInvSnap.empty) {
+                await updateDoc(doc(db, 'Inventory', rxInvSnap.docs[0].id), { quantity: increment(qty) });
+            } else {
+                await addDoc(collection(db, 'Inventory'), {
+                    phc_id: t.to_phc_id,
+                    medicine_id: t.medicine_id,
+                    quantity: qty,
+                });
+            }
+
+            // 2. Subtract stock from sender's inventory
+            const txInvQ = query(collection(db, 'Inventory'), where('phc_id', '==', t.from_phc_id), where('medicine_id', '==', t.medicine_id));
+            const txInvSnap = await getDocs(txInvQ);
+            if (!txInvSnap.empty) {
+                await updateDoc(doc(db, 'Inventory', txInvSnap.docs[0].id), { quantity: increment(-qty) });
+            }
+
+            // 3. Mark transfer status as completed directly
             await updateDoc(doc(db, 'Transfers', t.id), {
-                status: 'pending',
+                status: 'completed',
+                quantity: qty,
                 approved_by: user?.uid || 'dho',
                 approved_at: serverTimestamp(),
             });
+
+            // 4. Log audit trail transactions for both PHCs
+            await addDoc(collection(db, 'Transactions'), {
+                phc_id: t.to_phc_id,
+                medicine_id: t.medicine_id,
+                type: 'receive',
+                quantity: qty,
+                note: `Received from ${t.fromPhcName} (DHO Approved)`,
+                performed_by: user?.uid || 'dho',
+                created_at: serverTimestamp(),
+            });
+
+            await addDoc(collection(db, 'Transactions'), {
+                phc_id: t.from_phc_id,
+                medicine_id: t.medicine_id,
+                type: 'dispense',
+                quantity: qty,
+                note: `Dispatched to ${t.toPhcName} (DHO Approved)`,
+                performed_by: user?.uid || 'dho',
+                created_at: serverTimestamp(),
+            });
+
         } catch (err) {
             console.error('Failed to approve transfer:', err);
             setError('Something went wrong approving this transfer — try again.');

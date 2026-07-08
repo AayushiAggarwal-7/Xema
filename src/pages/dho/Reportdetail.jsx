@@ -4,6 +4,19 @@ import { useParams, useNavigate } from "react-router-dom";
 import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase"; // adjust to your actual firebase init path
 import { computeDistrictScores } from "../../lib/scoring.js";
+// Helper to determine greeting based on current local time
+function getGreeting() {
+    const hr = new Date().getHours();
+    if (hr < 12) {
+        return { emoji: "🌅", text: "Good Morning!!" };
+    } else if (hr < 17) {
+        return { emoji: "☀️", text: "Good Afternoon!!" };
+    } else {
+        return { emoji: "🌇", text: "Good Evening!!" };
+    }
+}
+
+
 // --- Colors, matching your existing design tokens ---
 const NAVY = "#1b2a4a";
 const CREAM = "#fdf6ee";
