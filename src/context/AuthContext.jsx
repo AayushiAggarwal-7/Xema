@@ -47,12 +47,12 @@ export function AuthProvider({ children }) {
 
     return () => unsubscribe();
   }, []);
-
   const logout = async () => {
     setLoading(true);
     try {
       await signOut(auth);
-      navigate('/');
+      // no manual navigation needed — ProtectedRoute redirects to "/"
+      // automatically once `user` becomes null
     } catch (error) {
       console.error('Error during sign out:', error);
     } finally {
