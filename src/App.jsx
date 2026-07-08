@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-
+import About from './pages/About';
 // Shared pages
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -47,6 +47,7 @@ function App() {
       <Router>
         <Routes>
           {/* Entry routes */}
+          <Route path="/about" element={<About />} />
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
 

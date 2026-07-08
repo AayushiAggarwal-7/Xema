@@ -11,7 +11,7 @@ import {
 const CREAM = "#FBF8F0";
 const PANEL = "#F1F0EA"; // light gray-ish right-half panel color
 const NAVY = "#1B2A4A";
-const STAGE = 420; // fixed square size shared by ring, icons, illustration, banner — shrunk to keep everything in one viewport
+const STAGE = 460; // fixed square size shared by ring, icons, illustration, banner
 
 const ROLES = [
     {
@@ -92,7 +92,7 @@ const styles = {
     // Plain silhouette icon, no filled circle background — matches target
     profileIcon: { display: "flex", alignItems: "center", justifyContent: "center" },
 
-    mainRow: { flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", gap: "16px", padding: "0 40px 0 22px", position: "relative", minHeight: 0 },
+    mainRow: { flex: 1, display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: "16px", padding: "0 40px 0 22px", position: "relative", minHeight: 0 },
     leftCol: { zIndex: 2, maxWidth: "440px" },
     headlineLine: { fontSize: "36px", fontWeight: 800, lineHeight: 1.16, margin: 0, color: NAVY },
     descText: { fontSize: "13.5px", color: "#5B5A52", marginTop: "12px", maxWidth: "400px", lineHeight: 1.55 },
@@ -108,7 +108,10 @@ const styles = {
         display: "flex", alignItems: "center", gap: "6px",
     }),
 
-    rightCol: { position: "relative", height: `${STAGE}px`, display: "flex", alignItems: "center", justifyContent: "center" },
+    // Fixed width matching STAGE exactly — this is what prevents the grid
+    // track from ever squeezing narrower than the ring's actual diameter,
+    // which was causing it to get clipped by the page's overflow: hidden.
+    rightCol: { position: "relative", width: `${STAGE}px`, height: `${STAGE}px`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
     stage: { position: "relative", width: `${STAGE}px`, height: `${STAGE}px`, flexShrink: 0 },
     illustrationImg: { position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: 3, maxHeight: "280px", maxWidth: "280px", objectFit: "contain" },
     // Underline-accent label instead of a solid filled block — sits just
@@ -142,7 +145,7 @@ const ICON_POSITIONS = [
 // a solid circle looks identical at every rotation angle, so spinning
 // it is invisible. The dashes make rotation visually obvious.
 function RingSVG({ color, spinning }) {
-    const r = STAGE * 0.48;
+    const r = STAGE * 0.44;
     const cx = STAGE / 2;
     const cy = STAGE / 2;
     const circumference = 2 * Math.PI * r;
@@ -150,14 +153,14 @@ function RingSVG({ color, spinning }) {
         <svg
             width={STAGE}
             height={STAGE}
-            style={{ position: "absolute", inset: 0, zIndex: 1 }}
+            style={{ position: "absolute", inset: 0, zIndex: 1, overflow: "visible" }}
             className={spinning ? "xema-ring-spinning" : ""}
         >
             <circle
                 cx={cx} cy={cy} r={r}
                 fill="none"
                 stroke={color}
-                strokeWidth={30}
+                strokeWidth={28}
                 strokeLinecap="round"
                 strokeDasharray={`${circumference * 0.62} ${circumference * 0.1}`}
                 transform={`rotate(-90 ${cx} ${cy})`}
@@ -204,7 +207,7 @@ export default function RoleCarousel({ onReturnHome }) {
                 <img className="xema-nav-clickable" src="/logo.svg" alt="Xema" style={styles.navLogo} onClick={onReturnHome} title="Back to home" />
                 <div style={styles.navTabs}>
                     <span className="xema-nav-clickable" style={styles.navTabActive} onClick={onReturnHome} title="Back to home">HOME</span>
-                    <span style={styles.navTabInactive}>ABOUT</span>
+                    <span className="xema-nav-clickable" style={styles.navTabInactive} onClick={() => navigate("/about")} title="About Xema">ABOUT</span>
                 </div>
                 <div style={styles.profileIcon}><User size={20} color={NAVY} /></div>
             </div>
